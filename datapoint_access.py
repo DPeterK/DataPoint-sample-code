@@ -49,12 +49,24 @@ class DPRequest(object):
     data_types = ['val', 'txt']
     unsupported_data_types = ['image', 'layer']
     wx_types = ['wxfcs', 'wxobs']
-    request_types = {'fcs_sites': 'val/wxfcs/all/{}/sitelist',
-                     'fcs_capabilities': 'val/wxfcs/all/{}/capabilities',
-                     'fcs_fiveday': 'val/wxfcs/all/{}/{}',
-                     'obs_sites': 'val/wxobs/all/{}/sitelist',
-                     'obs_capabilities': 'val/wxobs/all/{}/capabilities',
-                     'obs_fiveday': 'val/wxobs/all/{}/{}'}
+    request_types = {
+        'fcs_sites': 'val/wxfcs/all/{}/sitelist',
+        'fcs_capabilities': 'val/wxfcs/all/{}/capabilities',
+        'fcs_fiveday': 'val/wxfcs/all/{}/{}',
+        'obs_sites': 'val/wxobs/all/{}/sitelist',
+        'obs_capabilities': 'val/wxobs/all/{}/capabilities',
+        'obs_fiveday': 'val/wxobs/all/{}/{}',
+        'extremes_capabilities': 'txt/wxobs/ukextremes/{}/capabilities',
+        'extremes_latest': 'txt/wxobs/ukextremes/{}/latest',
+        'parks_sitelist': 'txt/wxfcs/nationalpark/{}/sitelist',
+        'parks_capabilities': 'txt/wxfcs/nationalpark/{}/capabilities',
+        'park_specific': 'txt/wxfcs/nationalpark/{}/{}',
+        'regional_sitelist': 'txt/wxfcs/regionalforecast/{}/sitelist',
+        'regional_caps': 'txt/wxfcs/regionalforecast/{}/capabilities',
+        'region_specific': 'txt/wxfcs/regionalforecast/{}/{}',
+        'mountains_sitelist': 'txt/wxfcs/mountainarea/{}/sitelist',
+        'mountains_capabilities': 'txt/wxfcs/mountainarea/{}/capabilities',
+        'mountain_specific': 'txt/wxfcs/mountainarea/{}/{}'}
 
 
     def __init__(self, data_type, wx_type, api_key,
@@ -143,22 +155,27 @@ class DPRequest(object):
             * request_type: a common request type or None (default).
 
         """
-        c_keys = self.request_types.keys()
+        if self.data_type in self.data_types:
+            c_keys = self.request_types.keys()
+        else:
+            raise NotImplementedError('Data type {} is not supported'.format(
+                self.data_type))
 
         if request_type in c_keys:
             wx, common_type = request_type.split('_')
-            if common_type == 'fiveday' and self.locn_id == 'all':
+            args = [self.data_container, self.site_id]
+            if common_type == 'fiveday' and self.site_id == 'all':
                 raise ValueError('Location ID cannot equal \'all\' for a '
                                  'five-day {} request'.format(wx))
-            elif common_type == 'fiveday':
-                resource = self.request_types[
-                    request_type].format(self.data_container, self.locn_id)
+#             elif common_type == 'fiveday':
+#                 resource = self.request_types[
+#                     request_type].format(self.data_container, self.locn_id)
             else:
-                resource = self.request_types[
-                    request_type].format(self.data_container)
+                resource = self.request_types[request_type].format(*args)
         else:
-            raise ValueError('Request type supplied does not match to the '
-                             'following valid options:\n  {}'.format(c_keys))
+            raise NotImplementedError('Request type supplied does not match '
+                                      'to the following valid '
+                                      'options:\n{}'.format(c_keys))
 
         self.build_request(resource=resource)
 
