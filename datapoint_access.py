@@ -158,7 +158,7 @@ class DPRequest(object):
                     request_type].format(self.data_container)
         else:
             raise ValueError('Request type supplied does not match to the '
-                             'following valid options:\n  {}'.format(c_keys()))
+                             'following valid options:\n  {}'.format(c_keys))
 
         self.build_request(resource=resource)
 
